@@ -76,6 +76,11 @@ corruption on the file, you won't lose anything!
 
 # Change Log
 
+## 0.6.0
+
+* Added configuration UI for setting: command prefix, default cooldown and language.
+* Localization added. Initial languages: en and pt-br.
+
 ## 0.5.0
 
 * Initial public release
