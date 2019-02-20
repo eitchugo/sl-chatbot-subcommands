@@ -105,3 +105,8 @@ venv.bak/
 
 # pycharm
 .idea
+
+# configuration and database files
+/settings.json
+/settings.js
+/SubsCommands.db
