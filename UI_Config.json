@@ -1,0 +1,25 @@
+{
+  "output_file": "settings.json",
+  "prefix": {
+    "type": "textbox",
+    "value": "!",
+    "label": "Prefix",
+    "tooltip": "Prefix that will be used by the commands.",
+    "group": "Core"
+  },
+  "cooldown": {
+    "type": "textbox",
+    "value": "10",
+    "label": "Cooldown",
+    "tooltip": "Default cooldown on all commands.",
+    "group": "Core"
+  },
+  "locale": {
+    "type": "dropdown",
+    "value": "en",
+    "items": ["en", "pt-br"],
+    "label": "Language",
+    "tooltip": "Language used on scripts messages.",
+    "group": "Core"
+  }
+}

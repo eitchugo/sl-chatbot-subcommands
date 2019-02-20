@@ -1,0 +1,13 @@
+{
+  "add_help": "Usage: %sadd command message",
+  "add_done": "Command %s%s added.",
+  "add_exists": "Command %s%s already exists. Created by %s.",
+  "edit_help": "Usage: %sedit command message",
+  "edit_done": "Successfuly edited command %s%s.",
+  "edit_denied": "You don't have permission do edit %s%s.",
+  "stat_help": "Usage: %sstat command",
+  "stat_done": "Command %s%s created by %s, used %s times.",
+  "del_help": "Usage: %sdel command",
+  "del_done": "Command %s%s removed.",
+  "notfound": "Command %s%s does not exists."
+}

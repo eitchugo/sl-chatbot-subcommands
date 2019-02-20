@@ -2,95 +2,85 @@
 # -*- coding: utf-8 -*-
 """Allow subs to create commands."""
 
-# Import Libraries
+# system libraries
 import os
 import sys
-import sqlite3
 import re
 import time
+import json
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
+# application libraries
+sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
+from database import InstancedDatabase  # noqa: E402
+from settings import MySettings  # noqa: E402
+from localization import MyLocale  # noqa: E402
 
 # [Required] Script Information
-ScriptName = "Subs Commands"
-Website = "https://twitch.tv/eitch"
-Description = "Allow subs to create commands."
-Creator = "Eitch"
-Version = "0.5.0"
+ScriptName = 'Subs Commands'
+Website = 'https://twitch.tv/eitch'
+Description = 'Allow subs to create commands.'
+Creator = 'Eitch'
+Version = '0.6.0'
 
 # Define Global Variables
-DatabaseFile = os.path.join(os.path.dirname(__file__), "SubsCommands.db")
-
-
-class InstancedDatabase(object):
-    """ Instanced database handler class. """
-
-    def __init__(self, databasefile):
-        self._connection = sqlite3.connect(databasefile, check_same_thread=False)
-        self._cursor = self._connection.cursor()
-
-    def execute(self, sqlquery, queryargs=None):
-        """ Execute a sql query on the instanced database. """
-        if queryargs:
-            self._cursor.execute(sqlquery, queryargs)
-        else:
-            self._cursor.execute(sqlquery)
-
-        return self._cursor
-
-    def commit(self):
-        """ Commit any changes of the instanced database. """
-        self._connection.commit()
-
-    def close(self):
-        """ Close the instanced database connection. """
-        self._connection.close()
-        return
-
-    def __del__(self):
-        """ Close the instanced database connection on destroy. """
-        self._connection.close()
-
-# [Required] Initialize Data (Only called on load)
-# ------------------------------------------------
+database_file = os.path.join(os.path.dirname(__file__), 'SubsCommands.db')
+config_file = os.path.join(os.path.dirname(__file__), 'settings.json')
+locale_dir = os.path.join(os.path.dirname(__file__), 'locale')
 
 
 def Init():
     """ [Required] Initialize Data (Only called on load) """
 
+    # database initialization
     global db
-    db = InstancedDatabase(DatabaseFile)
+    db = InstancedDatabase(database_file)
 
     # Create db file if not exists
-    db.execute("CREATE TABLE IF NOT EXISTS `commands` ("
-               "`id` INTEGER PRIMARY KEY,"
-               "`name` TEXT UNIQUE,"
-               "`timestamp` INTEGER,"
-               "`count` INTEGER,"
-               "`creator` TEXT,"
-               "`text` TEXT)"
+    db.execute('CREATE TABLE IF NOT EXISTS `commands` ('
+               '`id` INTEGER PRIMARY KEY,'
+               '`name` TEXT UNIQUE,'
+               '`timestamp` INTEGER,'
+               '`count` INTEGER,'
+               '`creator` TEXT,'
+               '`text` TEXT)'
                )
 
     db.commit()
+
+    # settings initialization
+    global settings
+    settings = MySettings(config_file)
+    settings.save()
+
+    # locale initialization
+    global locale
+    locale = MyLocale(os.path.join(locale_dir, settings.locale) + '.json')
+
     return
+
 
 def Execute(data):
     """ [Required] Execute Data / Process messages """
 
-    if data.IsChatMessage() and re.search(r"^!", data.Message):
+    prefix = settings.prefix
+    cooldown = settings.cooldown
+    command = None
+
+    if data.IsChatMessage() and re.search(r"^%s" % prefix, data.Message):
         user = data.User
         request = data.GetParam(0).lower()
         request = re.sub(r'[^a-z0-9]', '', request)
 
         if data.GetParamCount() > 1:
-            command = re.sub(r'^!', '', data.GetParam(1)).lower()
+            command = re.sub(r"^%s" % prefix, '', data.GetParam(1)).lower()
             command = re.sub(r'[^a-z0-9]', '', command)
 
         # command creation
-        if request == "add" and (Parent.HasPermission(user, "Subscriber", "") or Parent.HasPermission(user, "Moderator", "")):
+        if request == 'add' and (Parent.HasPermission(user, 'Subscriber', '')
+                                 or Parent.HasPermission(user, 'Moderator', '')):
             # not enough parameters
             if data.GetParamCount() < 3:
-                Parent.SendStreamMessage("Use: !add !comando <mensagem>")
+                Parent.SendStreamMessage(locale.add_help % prefix)
                 return
 
             msg = data.Message
@@ -103,19 +93,21 @@ def Execute(data):
             if sql_row is None:
                 # add new command
                 new_entry = (command, time.time(), 0, user, msg)
-                db.execute("INSERT INTO `commands`(`name`, `timestamp`, `count`, `creator`, `text`) VALUES (?,?,?,?,?)", new_entry)
+                db.execute("INSERT INTO `commands`(`name`, `timestamp`, `count`, `creator`, `text`) VALUES (?,?,?,?,?)",
+                           new_entry)
                 db.commit()
-                Parent.SendStreamMessage("Comando !%s adicionado." % command)
+                Parent.SendStreamMessage(locale.add_done % (prefix, command))
                 return
             else:
                 # command already exists
-                Parent.SendStreamMessage("Comando !%s ja existe. Criado por %s." % (command, sql_row[0]))
+                Parent.SendStreamMessage(locale.add_exists % (prefix, command, sql_row[0]))
                 return
 
-        elif request == "edit" and (Parent.HasPermission(user, "Subscriber", "") or Parent.HasPermission(user, "Moderator", "")):
+        elif request == "edit" and (Parent.HasPermission(user, "Subscriber", "") or
+                                    Parent.HasPermission(user, "Moderator", "")):
             # not enough parameters
             if data.GetParamCount() < 3:
-                Parent.SendStreamMessage("Use: !edit !comando <mensagem>")
+                Parent.SendStreamMessage(locale.edit_help % prefix)
                 return
 
             msg = data.Message
@@ -130,58 +122,58 @@ def Execute(data):
                 if (sql_row[1] == user) or (Parent.HasPermission(user, "Moderator", "")):
                     db.execute("UPDATE `commands` SET `text` = ? WHERE `id` = ?", (msg, sql_row[0]))
                     db.commit()
-                    Parent.SendStreamMessage("Comando !%s editado." % command)
+                    Parent.SendStreamMessage(locale.edit_done % (prefix, command))
                     return
                 else:
-                    Parent.SendStreamMessage("Você não pode editar !%s." % command)
+                    Parent.SendStreamMessage(locale.edit_denied % (prefix, command))
                     return
             else:
                 # command doesn't exist
-                Parent.SendStreamMessage("Comando !%s não existe." % command)
+                Parent.SendStreamMessage(locale.notfound % (prefix, command))
                 return
 
         # command stat
         elif request == "stat" and Parent.HasPermission(user, "Everyone", ""):
             # not enough parameters
             if data.GetParamCount() < 2:
-                Parent.SendStreamMessage("Use: !stat !comando")
+                Parent.SendStreamMessage(locale.stat_help % prefix)
                 return
 
             sql_row = db.execute("SELECT creator,count FROM `commands` WHERE `name` = ?", (command,)).fetchone()
             if sql_row is not None:
-                Parent.SendStreamMessage("Comando !%s criado por %s, usado %s vezes." % (command, sql_row[0], sql_row[1]))
+                Parent.SendStreamMessage(locale.stat_done % (prefix, command, sql_row[0], sql_row[1]))
                 return
             else:
-                Parent.SendStreamMessage("Comando !%s não existe." % command)
+                Parent.SendStreamMessage(locale.notfound % (prefix, command))
                 return
 
         # command del
         elif request == "del" and Parent.HasPermission(user, "Caster", "Caster"):
             # not enough parameters
             if data.GetParamCount() < 2:
-                Parent.SendStreamMessage("Use: !del !comando")
+                Parent.SendStreamMessage(locale.del_help % prefix)
                 return
 
             sql_row = db.execute("SELECT id FROM `commands` WHERE `name` = ?", (command,)).fetchone()
             if sql_row is not None:
                 db.execute("DELETE FROM `commands` WHERE `id` = ?", (sql_row[0],))
                 db.commit()
-                Parent.SendStreamMessage("Comando !%s removido." % command)
+                Parent.SendStreamMessage(locale.del_done % (prefix, command))
                 return
             else:
-                Parent.SendStreamMessage("Comando !%s não existe." % command)
+                Parent.SendStreamMessage(locale.notfound % (prefix, command))
                 return
 
         # display commands
         else:
-            command  = re.sub(r'^!', '', request)
+            command  = re.sub(r"^%s" % prefix, '', request)
             sql_row = db.execute("SELECT id,count,text FROM `commands` WHERE `name` = ?", (command,)).fetchone()
             if sql_row is not None:
                 # command is on cooldown, doing nothing
-                if Parent.IsOnCooldown(ScriptName, "!" + command):
+                if Parent.IsOnCooldown(ScriptName, prefix + command):
                     return
 
-                Parent.AddCooldown(ScriptName, "!" + command, 10)
+                Parent.AddCooldown(ScriptName, prefix + command, cooldown)
 
                 # increment counter
                 count = int(sql_row[1]) + 1
@@ -200,6 +192,14 @@ def Execute(data):
 
 def Tick():
     """ [Required] Tick method (Gets called during every iteration even when there is no incoming data) """
+    return
+
+
+def ReloadSettings(json_data):
+    """ [Optional] Reload Settings (Called when a user clicks the Save Settings button in the Chatbot UI) """
+    settings.__dict__ = json.loads(json_data)
+    settings.save()
+    locale.reload(os.path.join(locale_dir, settings.locale) + '.json')
     return
 
 
