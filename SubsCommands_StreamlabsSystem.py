@@ -19,7 +19,7 @@ ScriptName = 'Subs Commands'
 Website = 'https://twitch.tv/eitch'
 Description = 'Allow subs to create commands.'
 Creator = 'Eitch'
-Version = '0.6.1'
+Version = '0.6.2'
 
 # Define Global Variables
 database_file = os.path.join(os.path.dirname(__file__), 'SubsCommands.db')
@@ -165,7 +165,13 @@ def Execute(data):
 
         # display commands
         else:
-            command  = re.sub(r"^%s" % prefix, '', request)
+            command = re.sub(r"^%s" % prefix, '', request)
+            # if exists, generate touser reply variable
+            if data.GetParamCount() > 1:
+                touser = data.GetParam(1)
+            else:
+                touser = user
+
             sql_row = db.execute("SELECT id,count,text FROM `commands` WHERE `name` = ?", (command,)).fetchone()
             if sql_row is not None:
                 # command is on cooldown, doing nothing
@@ -183,6 +189,7 @@ def Execute(data):
                 reply = sql_row[2]
                 reply = re.sub(r"\$\(count\)", str(count), reply)
                 reply = re.sub(r"\$\(user\)", str(user), reply)
+                reply = re.sub(r"\$\(touser\)", str(touser), reply)
                 Parent.SendStreamMessage(reply)
                 return
 

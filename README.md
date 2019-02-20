@@ -55,10 +55,11 @@ This will show who created the command and how many times it was used.
 The following variables can be used on the commands' texts. The script will 
 replace the variable with their corresponding replacement:
 
-| Variable |              Replacement             |
-|:--------:|:------------------------------------:|
-| $(count) | How many times the command was used. |
-| $(user)  | Which used just used the command.    |
+| Variable  |              Replacement             |
+|:---------:|:------------------------------------:|
+| $(count)  | How many times the command was used. |
+| $(user)   | The user that invoked the command.   |
+| $(touser) | The first argument after a command.  |
 
 # Database
 
@@ -75,6 +76,10 @@ the `.db` extension.
 corruption on the file, you won't lose anything!
 
 # Change Log
+
+## 0.6.2
+
+* Added `$(touser)` variable for messages
 
 ## 0.6.1
 
