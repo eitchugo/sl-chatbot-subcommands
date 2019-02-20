@@ -76,6 +76,10 @@ corruption on the file, you won't lose anything!
 
 # Change Log
 
+## 0.6.1
+
+* Fixed settings instance class variables 
+
 ## 0.6.0
 
 * Added configuration UI for setting: command prefix, default cooldown and language.

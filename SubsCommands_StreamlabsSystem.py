@@ -7,7 +7,6 @@ import os
 import sys
 import re
 import time
-import json
 
 # application libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
@@ -20,7 +19,7 @@ ScriptName = 'Subs Commands'
 Website = 'https://twitch.tv/eitch'
 Description = 'Allow subs to create commands.'
 Creator = 'Eitch'
-Version = '0.6.0'
+Version = '0.6.1'
 
 # Define Global Variables
 database_file = os.path.join(os.path.dirname(__file__), 'SubsCommands.db')
@@ -197,7 +196,7 @@ def Tick():
 
 def ReloadSettings(json_data):
     """ [Optional] Reload Settings (Called when a user clicks the Save Settings button in the Chatbot UI) """
-    settings.__dict__ = json.loads(json_data)
+    settings.reload(json_data)
     settings.save()
     locale.reload(os.path.join(locale_dir, settings.locale) + '.json')
     return
