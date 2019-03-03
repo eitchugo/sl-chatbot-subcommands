@@ -65,7 +65,7 @@ def Execute(data):
     cooldown = settings.cooldown
     command = None
 
-    if data.IsChatMessage() and re.search(r"^%s" % prefix, data.Message):
+    if data.IsChatMessage() and re.search(r"^%s" % prefix, data.Message) and not data.IsWhisper():
         user = data.User
         request = data.GetParam(0).lower()
         request = re.sub(r'[^a-z0-9]', '', request)
