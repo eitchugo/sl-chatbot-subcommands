@@ -19,7 +19,7 @@ ScriptName = 'Subs Commands'
 Website = 'https://twitch.tv/eitch'
 Description = 'Allow subs to create commands.'
 Creator = 'Eitch'
-Version = '0.6.2'
+Version = '0.6.3'
 
 # Define Global Variables
 database_file = os.path.join(os.path.dirname(__file__), 'SubsCommands.db')

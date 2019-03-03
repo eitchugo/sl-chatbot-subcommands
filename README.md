@@ -77,6 +77,10 @@ corruption on the file, you won't lose anything!
 
 # Change Log
 
+## 0.6.3
+
+* Ignoring messages from whisper
+
 ## 0.6.2
 
 * Added `$(touser)` variable for messages
