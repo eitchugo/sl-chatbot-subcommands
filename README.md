@@ -67,7 +67,7 @@ The script uses SQLite python library to create a local database file containing
 all the commands and stats associated with them. The database file location
 is the same as the script itself. For example:
 
-* C:\Users\<USER>\AppData\Roaming\Streamlabs\Streamlabs Chatbot\Services\Scripts\SubsCommands
+* C:\Users\\\<USER>\\AppData\Roaming\Streamlabs\Streamlabs Chatbot\Services\Scripts\sl-chatbot-subscommands
 
 Where `<USER>` is your local user. All databases used by this script will have
 the `.db` extension.
@@ -75,7 +75,18 @@ the `.db` extension.
 **REMEMBER**: Backup your database files periodically. If you have any loss or
 corruption on the file, you won't lose anything!
 
+# Exports
+
+On settings, you can export all the commands to a csv file using the button 
+provided. The script will try to open the generated csv file automatically 
+using the system, and you may have to choose a program to open it. You can
+open on Notepad or any other text editor.
+
 # Change Log
+
+## 0.6.4
+
+* Export commands to csv
 
 ## 0.6.3
 

@@ -7,6 +7,9 @@ import os
 import sys
 import re
 import time
+import datetime
+import codecs
+import csv
 
 # application libraries
 sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
@@ -19,7 +22,7 @@ ScriptName = 'Subs Commands'
 Website = 'https://twitch.tv/eitch'
 Description = 'Allow subs to create commands.'
 Creator = 'Eitch'
-Version = '0.6.3'
+Version = '0.6.4'
 
 # Define Global Variables
 database_file = os.path.join(os.path.dirname(__file__), 'SubsCommands.db')
@@ -217,4 +220,18 @@ def Unload():
 
 def ScriptToggled(state):
     """ [Optional] ScriptToggled (Notifies you when a user disables your script or enables it) """
+    return
+
+
+def export_and_view_csv():
+    """ Exports commands to csv and view it """
+    Parent.Log('SubCommands', "[%s] Exporting commands to CSV." % datetime.datetime.now())
+    location = os.path.join(os.path.dirname(__file__), "exported_commands.csv")
+    with codecs.open(location, encoding='utf-8-sig', mode='w+') as f:
+        rs = db.execute("SELECT name, text, creator FROM `commands`").fetchall()
+        writer = csv.writer(f)
+        writer.writerow(['Name', 'Command', 'Creator'])
+        writer.writerows(rs)
+
+    os.startfile(location)
     return

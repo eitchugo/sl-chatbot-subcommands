@@ -21,5 +21,13 @@
     "label": "Language",
     "tooltip": "Language used on scripts messages.",
     "group": "Core"
+  },
+   "export_and_view_csv": {
+    "type": "button",
+    "label": "Export Commands to CSV",
+    "tooltip": "Exports commands to a csv and view it.",
+    "function": "export_and_view_csv",
+    "wsevent": "",
+    "group": "Exports"
   }
 }
